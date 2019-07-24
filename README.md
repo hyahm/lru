@@ -12,22 +12,34 @@ go get github.com/hyahm/lru
   ```
   lru.Init(10)
   ```
- > 添加 key和value
+ > 添加 key和value, 以下为doc中的例子
   ```
-lru.Add("adsf", "bbbbb")
-lru.Add("cccc", "111111")
-lru.Add("dddd", "2222222")
+package main
 
-lru.Add("eeeee", "33333")
-lru.Add("fffff", "4444444")
-lru.Add("gggg", "23423")
-lru.Add("hhhh", "645345")
-lru.Add("iiiii", "6789678")
+import (
+	"fmt"
+	"lru"
+)
 
-lru.Add("jjjjjjj", "123123")
-lru.Add("kkkkkk", "53536790")
-lru.Add("lllll", "0000")
-lru.Add("mmm", "226666")
+type el struct {
+	Id int
+	Name string
+}
+
+func main() {
+	lru.Init(10)
+
+	lru.Add("adsf", "bbbbb")
+	lru.Add("cccc", "111111")
+	e := &el{
+		Id: 1,
+		Name: "68",
+	}
+	lru.Add("adsf", e)
+	fmt.Println(lru.Len())
+	lru.OrderPrint()
+}
+
 ```
 > 顺序打印
 ```
