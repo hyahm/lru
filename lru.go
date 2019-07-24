@@ -27,7 +27,7 @@ type list struct {
 	lock sync.RWMutex
 	root *element // sentinel list element, only &root, root.prev, and root.next are used
 	last *element  // 最后一个元素
-	len  int     // current list length excluding (this) sentinel element
+	len  int64     // current list length excluding (this) sentinel element
 	count uint64  // 缓存多少元素
 }
 
@@ -52,6 +52,7 @@ func Add(key interface{}, value interface{}) {
 	Lru.lock.Lock()
 	defer Lru.lock.Unlock()
 	add(key,value)
+	fmt.Println("last: ",Lru.last.key)
 }
 
 // 获取值
@@ -109,10 +110,15 @@ func OrderPrint() {
 		panic("must init first")
 	}
 	Lru.lock.Lock()
-	for li := Lru.root; li != nil; li = li.next {
-		fmt.Println("key: ",li.key, "---- value: ", li.value)
+	for li := Lru.root; li.next != nil; li = li.next {
+		fmt.Println("key: ",li.key, "---- value: ", li.value, " ---- nextkey: ",li.next.key)
 	}
+	fmt.Println("key: ",Lru.last.key, "---- value: ", Lru.last.value, " ---- nextkey: ",nil)
 	Lru.lock.Unlock()
+}
+
+func Len() int64 {
+	return Lru.len
 }
 
 func Print() {
@@ -151,6 +157,7 @@ func add(key interface{}, value interface{})  {
 		if Lru.root == lru[key] {
 			return
 		} else {
+
 			// 否则就插入到开头, 开头的元素后移
 			moveToPrev(key , value )
 		}
@@ -197,6 +204,11 @@ func moveToPrev(key interface{}, value interface{}) {
 	// 否则就插入到开头, 开头的元素后移
 	//把当前位置元素的上一个元素的下一个元素指向本元素的下一个元素
 	//el := &element{}
+	if lru[key] == Lru.root {
+		//更新值就可以了
+		lru[key].value = value
+		return
+	}
 
 	if Lru.len == 2 {
 		//如果是2个元素
@@ -218,7 +230,9 @@ func moveToPrev(key interface{}, value interface{}) {
 		return
 	}
 	if Lru.len > 2 {
+		fmt.Println(122222222222)
 		if  lru[key] == Lru.last {
+
 			//如果这个元素是最后一个, 更新这个元素
 			//如果这个值是最后一个的话, 还要更新倒数第二个元素
 			Lru.last.prev.next = nil
@@ -226,9 +240,15 @@ func moveToPrev(key interface{}, value interface{}) {
 			Lru.last = Lru.last.prev
 			lru[Lru.last.key] = Lru.last
 		}
-		//如果不是, 更新这个元素
+		fmt.Println("111111111111")
+		//如果不是, 更新这个元素 上一个和下一个元素的值
+		lru[key].prev.next = lru[key].next
+		lru[key].next.prev = lru[key].prev
+		//抽出来这个值到开头
 		lru[key].prev = nil
+		lru[key].value = value
 		lru[key].next = Lru.root
+		// tmp 是第二个元素
 		tmp := Lru.root
 		Lru.root = lru[key]
 
