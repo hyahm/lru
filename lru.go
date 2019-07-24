@@ -20,6 +20,7 @@ var lru map[interface{}]*element
 
 // 数量太少, 因为边界问题难测试, 所以定义了最小长度
 const LESS = 5
+
 var Lru *list
 
 type list struct {
@@ -62,6 +63,32 @@ func Get(key interface{}) interface{} {
 	}
 	if value, ok := lru[key]; ok {
 		return value.value
+	}
+	return nil
+}
+
+func Next(key interface{}) interface{} {
+	if Lru == nil {
+		panic("must init first")
+	}
+	if value, ok := lru[key]; ok {
+		if value.next == nil {
+			return  nil
+		}
+		return value.next.value
+	}
+	return nil
+}
+
+func Prev(key interface{}) interface{} {
+	if Lru == nil {
+		panic("must init first")
+	}
+	if value, ok := lru[key]; ok {
+		if value.prev == nil {
+			return  nil
+		}
+		return value.prev.value
 	}
 	return nil
 }

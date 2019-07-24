@@ -7,6 +7,7 @@ import (
 
 func main() {
 	lru.Init(10)
+
 	lru.Add("adsf", "bbbbb")
 	lru.Add("cccc", "111111")
 
