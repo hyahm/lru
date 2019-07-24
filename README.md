@@ -39,11 +39,10 @@ func main() {
 	fmt.Println(lru.Len())
 	lru.OrderPrint()
 }
+```
 > 万能的add方法, 只要是添加值都可以使用此方法, 存在就会更新, 不存在就会插入
 ```
 lru.Add()
-```
-
 ```
 > 顺序打印
 ```
