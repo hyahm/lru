@@ -238,11 +238,6 @@ func moveToPrev(key interface{}, value interface{}) {
 	// 否则就插入到开头, 开头的元素后移
 	//把当前位置元素的上一个元素的下一个元素指向本元素的下一个元素
 	//el := &element{}
-	if lru[key] == Lru.root {
-		//更新值就可以了
-		lru[key].value = value
-		return
-	}
 
 	if Lru.len == 2 {
 		//如果是2个元素
@@ -254,6 +249,7 @@ func moveToPrev(key interface{}, value interface{}) {
 		lasttmp.next = nil
 		roottmp.prev = nil
 		roottmp.next = lasttmp
+		roottmp.value = value
 		Lru.root = roottmp
 		Lru.last = lasttmp
 		//更新lru

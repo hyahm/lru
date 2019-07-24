@@ -11,7 +11,7 @@ func main() {
 	lru.Add("adsf", "bbbbb")
 	lru.Add("cccc", "111111")
 
-	lru.Add("cccc", "2222")
+	lru.Add("adsf", "333")
 	fmt.Println(lru.Len())
 	lru.OrderPrint()
 }
