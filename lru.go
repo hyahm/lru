@@ -289,3 +289,12 @@ func moveToPrev(key interface{}, value interface{}) {
 
 	}
 }
+
+
+func FirstKey() interface{} {
+	return Lru.root.key
+}
+
+func LastKey() interface{} {
+	return Lru.last.key
+}
