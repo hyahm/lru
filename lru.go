@@ -43,6 +43,7 @@ func Init(n uint64) {
 		count: n,
 		lock: sync.RWMutex{},
 		root: &element{},
+		last: &element{},
 	}
 }
 //开始存一个值
@@ -292,9 +293,36 @@ func moveToPrev(key interface{}, value interface{}) {
 
 
 func FirstKey() interface{} {
+	Lru.lock.Lock()
+	defer Lru.lock.Unlock()
 	return Lru.root.key
 }
 
 func LastKey() interface{} {
+	Lru.lock.Lock()
+	defer Lru.lock.Unlock()
 	return Lru.last.key
+}
+
+func Clean(n uint64) {
+	Lru.lock.Lock()
+	defer Lru.lock.Unlock()
+	lru = nil
+	Lru = nil
+	Lru = &list{
+		len: 0,
+		count: n,
+		lock: sync.RWMutex{},
+		root: &element{},
+		last: &element{},
+	}
+}
+
+func Exsit(key interface{}) bool {
+	Lru.lock.Lock()
+	defer Lru.lock.Unlock()
+	if _, ok := lru[key]; ok {
+		return true
+	}
+	return false
 }
