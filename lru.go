@@ -61,6 +61,8 @@ func Get(key interface{}) interface{} {
 	if Lru == nil {
 		panic("must init first")
 	}
+	Lru.lock.Lock()
+	defer Lru.lock.Unlock()
 	if value, ok := lru[key]; ok {
 		return value.value
 	}
@@ -71,6 +73,8 @@ func Next(key interface{}) interface{} {
 	if Lru == nil {
 		panic("must init first")
 	}
+	Lru.lock.Lock()
+	defer Lru.lock.Unlock()
 	if value, ok := lru[key]; ok {
 		if value.next == nil {
 			return  nil
@@ -84,6 +88,8 @@ func Prev(key interface{}) interface{} {
 	if Lru == nil {
 		panic("must init first")
 	}
+	Lru.lock.Lock()
+	defer Lru.lock.Unlock()
 	if value, ok := lru[key]; ok {
 		if value.prev == nil {
 			return  nil
