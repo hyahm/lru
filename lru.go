@@ -188,6 +188,7 @@ func add(key interface{}, value interface{})  {
 	if _, ok := lru[key]; ok {
 		//如果是第一个元素的话, 什么也不用操作
 		if Lru.root == lru[key] {
+			Lru.root.value = value
 			return
 		} else {
 
