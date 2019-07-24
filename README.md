@@ -69,4 +69,12 @@ lru.Get(key)
 ```
 lru.Get(key)
 ```
+> 判断是否存在key
+```
+lru.Exsit(key)
+```
+> 清空缓存
+```
+lru.Clean()
+```
 基本上这些就能满足需求
