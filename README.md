@@ -28,11 +28,11 @@ go get github.com/hyahm/lru
 ```
 > 顺序打印
 ```
-	lru.OrderPrint()
+lru.OrderPrint()
 ```
 > 无序打印
 ```
-	lru.Print()
+lru.Print()
 ```
 > 删除key
 ```
