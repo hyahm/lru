@@ -42,7 +42,7 @@ func main() {
 ```
 > 万能的add方法, 只要是添加值都可以使用此方法, 存在就会更新, 不存在就会插入
 ```
-lru.Add()
+lru.Add(key, value interface{})
 ```
 > 顺序打印
 ```
@@ -54,27 +54,27 @@ lru.Print()
 ```
 > 删除key
 ```
-lru.Remove(key)
+lru.Remove(key interface{})
 ```
-> 获取缓存长度
+> 获取缓存长度 
 ```
-lru.Len()
+lru.Len() int64
 ```
 > 根据key获取值
 ```
-lru.Get(key)
+lru.Get(key interface{}) interface{}
 ```
 > 根据key获取上一个key
 ```
-lru.Get(key)
+lru.Get(key interface{}) interface{}
 ```
 > 根据key获取下一个key
 ```
-lru.Get(key)
+lru.Get(key interface{}) interface{}
 ```
 > 判断是否存在key
 ```
-lru.Exsit(key)
+lru.Exsit(key interface{}) bool
 ```
 > 清空缓存
 ```
