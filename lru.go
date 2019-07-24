@@ -75,7 +75,7 @@ func Next(key interface{}) interface{} {
 		if value.next == nil {
 			return  nil
 		}
-		return value.next.value
+		return value.next.key
 	}
 	return nil
 }
@@ -88,7 +88,7 @@ func Prev(key interface{}) interface{} {
 		if value.prev == nil {
 			return  nil
 		}
-		return value.prev.value
+		return value.prev.key
 	}
 	return nil
 }
