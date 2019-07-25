@@ -44,17 +44,21 @@ func main() {
 ```
 lru.Add(key, value interface{})
 ```
-> 顺序打印
+> 顺序打印(有读写锁, 会阻碍读写操作,正式环境建议别使用)
 ```
 lru.OrderPrint()
 ```
-> 无序打印
+> 无序打印(查看缓存, 推荐使用)
 ```
 lru.Print()
 ```
 > 删除key
 ```
 lru.Remove(key interface{})
+```
+> 获取所有的key
+```
+lru.GetKeys(key interface{}) []interface{}
 ```
 > 获取缓存长度 
 ```
