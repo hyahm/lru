@@ -244,7 +244,7 @@ func add(key interface{}, value interface{}) interface{} {
 		}
 		Lru.len++
 		//判断长度是否超过了缓存
-		if uint64(Lru.len) > Lru.count {
+		for uint64(Lru.len) > Lru.count {
 			//移除最后一个元素, 移除之前先更新最后一个元素
 			removeLast()
 		}
