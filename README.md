@@ -80,6 +80,10 @@ lru.Next(key interface{}) interface{}
 ```
 lru.Exsit(key interface{}) bool
 ```
+> 重新设置缓存的长度
+```
+lru.Resize(n uint64)
+```
 > 清空缓存(不推荐使用, 也未测试)
 ```
 lru.Clean(n)
