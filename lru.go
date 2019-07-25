@@ -15,8 +15,7 @@ type element struct {
 	// 这个元素的值
 	value interface{}
 }
-//  这里存key 和 元素
-var lru map[interface{}]*element
+
 
 // 数量太少, 因为边界问题难测试, 所以定义了最小长度
 const LESS = 5
@@ -24,11 +23,12 @@ const LESS = 5
 var Lru *list
 
 type list struct {
+	lru map[interface{}]*element //  这里存key 和 元素
 	//保存第一个元素
 	lock sync.RWMutex
 	root *element // sentinel list element, only &root, root.prev, and root.next are used
 	last *element  // 最后一个元素
-	len  int64     // current list length excluding (this) sentinel element
+	len  uint64     // current list length excluding (this) sentinel element
 	count uint64  // 缓存多少元素
 }
 
@@ -38,8 +38,9 @@ func Init(n uint64) {
 		e := fmt.Sprintf("cache count must more than %d" , LESS)
 		panic(e)
 	}
-	lru = make(map[interface{}]*element, 0)
+
 	Lru = &list{
+		lru: make(map[interface{}]*element, 0),
 		count: n,
 		lock: sync.RWMutex{},
 		root: &element{},
@@ -64,7 +65,7 @@ func Get(key interface{}) interface{} {
 	}
 	Lru.lock.Lock()
 	defer Lru.lock.Unlock()
-	if value, ok := lru[key]; ok {
+	if value, ok := Lru.lru[key]; ok {
 		return value.value
 	}
 	return nil
@@ -76,7 +77,7 @@ func Keys() []interface{} {
 		return nil
 	}
 	keys := make([]interface{}, 0)
-	for k, _ := range lru {
+	for k, _ := range Lru.lru {
 		keys = append(keys, k)
 	}
 
@@ -89,7 +90,7 @@ func Next(key interface{}) interface{} {
 	}
 	Lru.lock.Lock()
 	defer Lru.lock.Unlock()
-	if value, ok := lru[key]; ok {
+	if value, ok := Lru.lru[key]; ok {
 		if value.next == nil {
 			return  nil
 		}
@@ -104,7 +105,7 @@ func Prev(key interface{}) interface{} {
 	}
 	Lru.lock.Lock()
 	defer Lru.lock.Unlock()
-	if value, ok := lru[key]; ok {
+	if value, ok := Lru.lru[key]; ok {
 		if value.prev == nil {
 			return  nil
 		}
@@ -124,13 +125,13 @@ func Remove(key interface{}) {
 	}
 	Lru.lock.Lock()
 	defer Lru.lock.Unlock()
-	this := lru[key]
+	this := Lru.lru[key]
 	//如果是第一个元素
 	if this == Lru.root {
 		tmp := Lru.root.next
 		tmp.prev = nil
 		Lru.root = tmp
-		delete(lru, key)
+		delete(Lru.lru, key)
 		return
 	}
 	//如果是最后一个
@@ -138,16 +139,16 @@ func Remove(key interface{}) {
 		tmp := Lru.last.prev
 		tmp.next = nil
 		Lru.last = tmp
-		delete(lru, key)
+		delete(Lru.lru, key)
 		return
 	}
 	// 中间的话, 直接删除,
 	// 更改上一个元素的下一个值
-	lru[key].prev.next = lru[key].next
+	Lru.lru[key].prev.next = Lru.lru[key].next
 	//更新下一个元素的上一个值
-	lru[key].next.prev = lru[key].prev
+	Lru.lru[key].next.prev = Lru.lru[key].prev
 	//删除
-	delete(lru, key)
+	delete(Lru.lru, key)
 	Lru.len--
 }
 
@@ -158,13 +159,13 @@ func OrderPrint() {
 	}
 	Lru.lock.Lock()
 	for li := Lru.root; li.next != nil; li = li.next {
-		log.Println("key: ",li.key, "---- value: ", li.value, " ---- nextkey: ",li.next.key)
+		fmt.Println("key: ",li.key, "---- value: ", li.value, " ---- nextkey: ",li.next.key)
 	}
-	log.Println("key: ",Lru.last.key, "---- value: ", Lru.last.value, " ---- nextkey: ",nil)
+	fmt.Println("key: ",Lru.last.key, "---- value: ", Lru.last.value, " ---- nextkey: ",nil)
 	Lru.lock.Unlock()
 }
 
-func Len() int64 {
+func Len() uint64 {
 	return Lru.len
 }
 
@@ -172,8 +173,18 @@ func Print() {
 	if Lru == nil {
 		panic("must init first")
 	}
-	for k, v := range lru{
-		fmt.Println("key: ", k, " ---- value: ",v.value)
+	for k, v := range Lru.lru{
+		log.Println("key: ", k, " ---- value: ",v.value)
+	}
+}
+
+func Resize(n uint64) {
+	//如果缩小了缓存, 那么可能需要删除后面多余的索引
+	Lru.count = n
+	if n < Lru.count {
+		for Lru.len > n {
+			removeLast()
+		}
 	}
 }
 
@@ -196,11 +207,11 @@ func add(key interface{}, value interface{}) interface{} {
 		// 更新长度
 		Lru.len = 1
 		// 更新lru
-		lru[key] = el
+		Lru.lru[key] = el
 	}
-	if _, ok := lru[key]; ok {
+	if _, ok := Lru.lru[key]; ok {
 		//如果是第一个元素的话, 什么也不用操作
-		if Lru.root == lru[key] {
+		if Lru.root == Lru.lru[key] {
 			Lru.root.value = value
 			return nil
 		} else {
@@ -222,8 +233,8 @@ func add(key interface{}, value interface{}) interface{} {
 		//将开头的元素修改成新的元素
 		Lru.root = el
 		//更新lru
-		lru[key] = Lru.root
-		lru[tmp.key] = tmp
+		Lru.lru[key] = Lru.root
+		Lru.lru[tmp.key] = tmp
 
 		//如果一开始只有一个元素, 更新最后一个元素的值
 		if Lru.len == 1 {
@@ -235,17 +246,21 @@ func add(key interface{}, value interface{}) interface{} {
 		//判断长度是否超过了缓存
 		if uint64(Lru.len) > Lru.count {
 			//移除最后一个元素, 移除之前先更新最后一个元素
-			tmp := Lru.last.prev
-			tmp.next = nil
-			lru[tmp.key] = tmp
-			removekey := Lru.last.key
-			delete(lru, Lru.last.key)
-			Lru.last = tmp
-			Lru.len--
-			return removekey
+			removeLast()
 		}
 	}
 	return nil
+}
+
+func removeLast() interface{} {
+	tmp := Lru.last.prev
+	tmp.next = nil
+	Lru.lru[tmp.key] = tmp
+	removekey := Lru.last.key
+	delete(Lru.lru, Lru.last.key)
+	Lru.last = tmp
+	Lru.len--
+	return removekey
 }
 
 func moveToPrev(key interface{}, value interface{}) {
@@ -268,37 +283,37 @@ func moveToPrev(key interface{}, value interface{}) {
 		Lru.root = roottmp
 		Lru.last = lasttmp
 		//更新lru
-		lru[Lru.root.key]= Lru.root
-		lru[Lru.last.key]= Lru.last
+		Lru.lru[Lru.root.key]= Lru.root
+		Lru.lru[Lru.last.key]= Lru.last
 
 		//lru
 		return
 	}
 	if Lru.len > 2 {
-		if  lru[key] == Lru.last {
+		if  Lru.lru[key] == Lru.last {
 
 			//如果这个元素是最后一个, 更新这个元素
 			//如果这个值是最后一个的话, 还要更新倒数第二个元素
 			Lru.last.prev.next = nil
 			// 最后一个元素 是最后一个元素
 			Lru.last = Lru.last.prev
-			lru[Lru.last.key] = Lru.last
+			Lru.lru[Lru.last.key] = Lru.last
 		}
 		//如果不是, 更新这个元素 上一个和下一个元素的值
-		lru[key].prev.next = lru[key].next
-		lru[key].next.prev = lru[key].prev
+		Lru.lru[key].prev.next = Lru.lru[key].next
+		Lru.lru[key].next.prev = Lru.lru[key].prev
 		//抽出来这个值到开头
-		lru[key].prev = nil
-		lru[key].value = value
-		lru[key].next = Lru.root
+		Lru.lru[key].prev = nil
+		Lru.lru[key].value = value
+		Lru.lru[key].next = Lru.root
 		// tmp 是第二个元素
 		tmp := Lru.root
-		Lru.root = lru[key]
+		Lru.root = Lru.lru[key]
 
 		// 更新 第二个元素
 		tmp.prev = Lru.root
 		//更新第二个元素的Lru
-		lru[tmp.key] = tmp
+		Lru.lru[tmp.key] = tmp
 
 	}
 }
@@ -319,9 +334,10 @@ func LastKey() interface{} {
 func Clean(n uint64) {
 	Lru.lock.Lock()
 	defer Lru.lock.Unlock()
-	lru = nil
+	Lru.lru = nil
 	Lru = nil
 	Lru = &list{
+		lru: make(map[interface{}]*element, 0),
 		len: 0,
 		count: n,
 		lock: sync.RWMutex{},
@@ -333,7 +349,7 @@ func Clean(n uint64) {
 func Exsit(key interface{}) bool {
 	Lru.lock.Lock()
 	defer Lru.lock.Unlock()
-	if _, ok := lru[key]; ok {
+	if _, ok := Lru.lru[key]; ok {
 		return true
 	}
 	return false
