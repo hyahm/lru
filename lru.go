@@ -54,7 +54,7 @@ func Add(key interface{}, value interface{}) {
 	Lru.lock.Lock()
 	defer Lru.lock.Unlock()
 	add(key,value)
-	fmt.Println("last: ",Lru.last.key)
+	log.Println("last: ",Lru.last.key)
 }
 
 // 获取值
@@ -68,6 +68,19 @@ func Get(key interface{}) interface{} {
 		return value.value
 	}
 	return nil
+}
+
+// 获取当前的keys, 没有值返回nil
+func Keys() []interface{} {
+	if Lru == nil {
+		return nil
+	}
+	keys := make([]interface{}, 0)
+	for k, _ := range lru {
+		keys = append(keys, k)
+	}
+
+	return keys
 }
 
 func Next(key interface{}) interface{} {
@@ -145,9 +158,9 @@ func OrderPrint() {
 	}
 	Lru.lock.Lock()
 	for li := Lru.root; li.next != nil; li = li.next {
-		fmt.Println("key: ",li.key, "---- value: ", li.value, " ---- nextkey: ",li.next.key)
+		log.Println("key: ",li.key, "---- value: ", li.value, " ---- nextkey: ",li.next.key)
 	}
-	fmt.Println("key: ",Lru.last.key, "---- value: ", Lru.last.value, " ---- nextkey: ",nil)
+	log.Println("key: ",Lru.last.key, "---- value: ", Lru.last.value, " ---- nextkey: ",nil)
 	Lru.lock.Unlock()
 }
 
@@ -159,14 +172,13 @@ func Print() {
 	if Lru == nil {
 		panic("must init first")
 	}
-	Lru.lock.Lock()
 	for k, v := range lru{
 		fmt.Println("key: ", k, " ---- value: ",v.value)
 	}
-	Lru.lock.Unlock()
 }
 
-func add(key interface{}, value interface{})  {
+// 返回被删除的key, 如果没删除返回nil
+func add(key interface{}, value interface{}) interface{} {
 	//先要判断是否存在这个key, 存在的话，就将元素移动最开始的位置,
 	el := &element{
 		prev: nil,
@@ -190,7 +202,7 @@ func add(key interface{}, value interface{})  {
 		//如果是第一个元素的话, 什么也不用操作
 		if Lru.root == lru[key] {
 			Lru.root.value = value
-			return
+			return nil
 		} else {
 
 			// 否则就插入到开头, 开头的元素后移
@@ -226,12 +238,14 @@ func add(key interface{}, value interface{})  {
 			tmp := Lru.last.prev
 			tmp.next = nil
 			lru[tmp.key] = tmp
-			fmt.Println("remove :", Lru.last.key)
+			removekey := Lru.last.key
 			delete(lru, Lru.last.key)
 			Lru.last = tmp
 			Lru.len--
+			return removekey
 		}
 	}
+	return nil
 }
 
 func moveToPrev(key interface{}, value interface{}) {
@@ -261,7 +275,6 @@ func moveToPrev(key interface{}, value interface{}) {
 		return
 	}
 	if Lru.len > 2 {
-		fmt.Println(122222222222)
 		if  lru[key] == Lru.last {
 
 			//如果这个元素是最后一个, 更新这个元素
@@ -271,7 +284,6 @@ func moveToPrev(key interface{}, value interface{}) {
 			Lru.last = Lru.last.prev
 			lru[Lru.last.key] = Lru.last
 		}
-		fmt.Println("111111111111")
 		//如果不是, 更新这个元素 上一个和下一个元素的值
 		lru[key].prev.next = lru[key].next
 		lru[key].next.prev = lru[key].prev
