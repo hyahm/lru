@@ -1,5 +1,5 @@
 # lru
-go 语言通用lru包, 使用异常简单
+ 线程安全的go语言通用lru包, 使用异常简单
 ### 安装
 ```
 go get github.com/hyahm/lru
