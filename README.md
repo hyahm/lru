@@ -62,7 +62,7 @@ lru.Keys(key interface{}) []interface{}
 ```
 > 获取缓存长度 
 ```
-lru.Len() int64
+lru.Len() uint64
 ```
 > 根据key获取值
 ```
