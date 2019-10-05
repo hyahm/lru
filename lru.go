@@ -18,7 +18,7 @@ type element struct {
 // 数量太少, 因为边界问题难测试, 所以定义了最小长度
 //const LESS = 5
 
-var Lru *list
+//var Lru *list
 
 type list struct {
 	lru map[interface{}]*element //  这里存key 和 元素
@@ -30,13 +30,13 @@ type list struct {
 	count uint64  // 缓存多少元素
 }
 
-func Init(n uint64) {
+func Init(n uint64) *list {
 	// 内存足够的话, 可以设置很大, 长度不会影响效率
 	if n <= 0 || n > 2<<32 {
-		n = 2<<32
+		n = 2<<10
 	}
 
-	Lru = &list{
+	return &list{
 		lru: make(map[interface{}]*element, 0),
 		count: n,
 		lock: sync.RWMutex{},
