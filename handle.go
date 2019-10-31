@@ -7,7 +7,7 @@ import (
 )
 
 //开始存一个值
-func (l *list) Add(key interface{}, value interface{}) {
+func (l *List) Add(key interface{}, value interface{}) {
 	if l.lru == nil {
 		panic("must init first")
 	}
@@ -18,7 +18,7 @@ func (l *list) Add(key interface{}, value interface{}) {
 }
 
 // 获取值
-func (l *list) Get(key interface{}) interface{} {
+func (l *List) Get(key interface{}) interface{} {
 	if l.lru == nil {
 		panic("must init first")
 	}
@@ -31,7 +31,7 @@ func (l *list) Get(key interface{}) interface{} {
 }
 
 // 获取当前的keys, 没有值返回nil
-func (l *list) Keys() []interface{} {
+func (l *List) Keys() []interface{} {
 	if l.lru == nil {
 		return nil
 	}
@@ -43,7 +43,7 @@ func (l *list) Keys() []interface{} {
 	return keys
 }
 
-func (l *list) Next(key interface{}) interface{} {
+func (l *List) Next(key interface{}) interface{} {
 	if l.lru == nil {
 		panic("must init first")
 	}
@@ -58,7 +58,7 @@ func (l *list) Next(key interface{}) interface{} {
 	return nil
 }
 
-func (l *list) Prev(key interface{}) interface{} {
+func (l *List) Prev(key interface{}) interface{} {
 	if l.lru == nil {
 		panic("must init first")
 	}
@@ -73,7 +73,7 @@ func (l *list) Prev(key interface{}) interface{} {
 	return nil
 }
 
-func (l *list) Remove(key interface{}) {
+func (l *List) Remove(key interface{}) {
 	if l.lru == nil {
 		panic("must init first")
 	}
@@ -112,7 +112,7 @@ func (l *list) Remove(key interface{}) {
 }
 
 
-func (l *list) OrderPrint() {
+func (l *List) OrderPrint() {
 	if l == nil {
 		panic("must init first")
 	}
@@ -123,11 +123,11 @@ func (l *list) OrderPrint() {
 	l.lock.Unlock()
 }
 
-func (l *list) Len() uint64 {
+func (l *List) Len() uint64 {
 	return l.len
 }
 
-func (l *list) Print() {
+func (l *List) Print() {
 	if l.lru == nil {
 		panic("must init first")
 	}
@@ -136,7 +136,7 @@ func (l *list) Print() {
 	}
 }
 
-func (l *list) Resize(n uint64) {
+func (l *List) Resize(n uint64) {
 	//如果缩小了缓存, 那么可能需要删除后面多余的索引
 	l.count = n
 	if n < l.count {
@@ -147,7 +147,7 @@ func (l *list) Resize(n uint64) {
 }
 
 // 返回被删除的key, 如果没删除返回nil
-func (l *list) add(key interface{}, value interface{}) interface{} {
+func (l *List) add(key interface{}, value interface{}) interface{} {
 	//先要判断是否存在这个key, 存在的话，就将元素移动最开始的位置,
 	el := &element{
 		prev: nil,
@@ -210,7 +210,7 @@ func (l *list) add(key interface{}, value interface{}) interface{} {
 	return nil
 }
 
-func (l *list) removeLast() interface{} {
+func (l *List) removeLast() interface{} {
 	tmp := l.last.prev
 	tmp.next = nil
 	l.lru[tmp.key] = tmp
@@ -221,7 +221,7 @@ func (l *list) removeLast() interface{} {
 	return removekey
 }
 
-func (l *list) moveToPrev(key interface{}, value interface{}) {
+func (l *List) moveToPrev(key interface{}, value interface{}) {
 	// 这里面的元素至少有2个, 否则进不来这里
 	// 否则就插入到开头, 开头的元素后移
 	//把当前位置元素的上一个元素的下一个元素指向本元素的下一个元素
@@ -277,24 +277,24 @@ func (l *list) moveToPrev(key interface{}, value interface{}) {
 }
 
 
-func (l *list) FirstKey() interface{} {
+func (l *List) FirstKey() interface{} {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 	return l.root.key
 }
 
-func (l *list) LastKey() interface{} {
+func (l *List) LastKey() interface{} {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 	return l.last.key
 }
 
-func (l *list) Clean(n uint64) {
+func (l *List) Clean(n uint64) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 	l = nil
 	l.lru = nil
-	l = &list{
+	l = &List{
 		lru: make(map[interface{}]*element, 0),
 		len: 0,
 		count: n,
@@ -304,7 +304,7 @@ func (l *list) Clean(n uint64) {
 	}
 }
 
-func (l *list) Exsit(key interface{}) bool {
+func (l *List) Exsit(key interface{}) bool {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 	if _, ok := l.lru[key]; ok {

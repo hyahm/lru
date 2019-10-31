@@ -20,7 +20,7 @@ type element struct {
 
 //var Lru *list
 
-type list struct {
+type List struct {
 	lru map[interface{}]*element //  这里存key 和 元素
 	//保存第一个元素
 	lock sync.RWMutex
@@ -30,13 +30,13 @@ type list struct {
 	count uint64  // 缓存多少元素
 }
 
-func Init(n uint64) *list {
+func Init(n uint64) *List {
 	// 内存足够的话, 可以设置很大, 长度不会影响效率
 	if n <= 0 || n > 2<<32 {
 		n = 2<<10
 	}
 
-	return &list{
+	return &List{
 		lru: make(map[interface{}]*element, 0),
 		count: n,
 		lock: sync.RWMutex{},
