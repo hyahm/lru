@@ -6,21 +6,23 @@ import (
 	"sync"
 )
 
+const DEFAULTCOUNT = 100
+
 //开始存一个值
 func (l *List) Add(key interface{}, value interface{}) {
 	if l.lru == nil {
-		panic("must init first")
+		l = Init(DEFAULTCOUNT)
 	}
 	l.lock.Lock()
 	defer l.lock.Unlock()
-	l.add(key,value)
-	log.Println("last: ",l.last.key)
+	l.add(key, value)
+	log.Println("last: ", l.last.key)
 }
 
 // 获取值
 func (l *List) Get(key interface{}) interface{} {
 	if l.lru == nil {
-		panic("must init first")
+		l = Init(DEFAULTCOUNT)
 	}
 	l.lock.Lock()
 	defer l.lock.Unlock()
@@ -45,13 +47,13 @@ func (l *List) Keys() []interface{} {
 
 func (l *List) Next(key interface{}) interface{} {
 	if l.lru == nil {
-		panic("must init first")
+		l = Init(DEFAULTCOUNT)
 	}
 	l.lock.Lock()
 	defer l.lock.Unlock()
 	if value, ok := l.lru[key]; ok {
 		if value.next == nil {
-			return  nil
+			return nil
 		}
 		return value.next.key
 	}
@@ -60,13 +62,13 @@ func (l *List) Next(key interface{}) interface{} {
 
 func (l *List) Prev(key interface{}) interface{} {
 	if l.lru == nil {
-		panic("must init first")
+		l = Init(DEFAULTCOUNT)
 	}
 	l.lock.Lock()
 	defer l.lock.Unlock()
 	if value, ok := l.lru[key]; ok {
 		if value.prev == nil {
-			return  nil
+			return nil
 		}
 		return value.prev.key
 	}
@@ -75,7 +77,7 @@ func (l *List) Prev(key interface{}) interface{} {
 
 func (l *List) Remove(key interface{}) {
 	if l.lru == nil {
-		panic("must init first")
+		return
 	}
 	//if Lru.len < LESS {
 	//	e := fmt.Sprintf("cache count less than %d, can't remove" , LESS)
@@ -101,8 +103,12 @@ func (l *List) Remove(key interface{}) {
 		delete(l.lru, key)
 		return
 	}
-	// 中间的话, 直接删除,
+	// 不存在就直接返回
+	if _, ok := l.lru[key]; !ok {
+		return
+	}
 	// 更改上一个元素的下一个值
+
 	l.lru[key].prev.next = l.lru[key].next
 	//更新下一个元素的上一个值
 	l.lru[key].next.prev = l.lru[key].prev
@@ -111,14 +117,13 @@ func (l *List) Remove(key interface{}) {
 	l.len--
 }
 
-
 func (l *List) OrderPrint() {
 	if l == nil {
-		panic("must init first")
+		return
 	}
 	l.lock.Lock()
 	for li := l.root; li.next != nil; li = li.next {
-		fmt.Println("key: ",li.key, "---- value: ", li.value, " ---- nextkey: ",li.next.key)
+		fmt.Println("key: ", li.key, "---- value: ", li.value, " ---- nextkey: ", li.next.key)
 	}
 	l.lock.Unlock()
 }
@@ -129,10 +134,10 @@ func (l *List) Len() uint64 {
 
 func (l *List) Print() {
 	if l.lru == nil {
-		panic("must init first")
+		return
 	}
-	for k, v := range l.lru{
-		log.Println("key: ", k, " ---- value: ",v.value)
+	for k, v := range l.lru {
+		log.Println("key: ", k, " ---- value: ", v.value)
 	}
 }
 
@@ -175,7 +180,7 @@ func (l *List) add(key interface{}, value interface{}) interface{} {
 		} else {
 
 			// 否则就插入到开头, 开头的元素后移
-			l.moveToPrev(key , value )
+			l.moveToPrev(key, value)
 		}
 
 	} else {
@@ -241,14 +246,14 @@ func (l *List) moveToPrev(key interface{}, value interface{}) {
 		l.root = roottmp
 		l.last = lasttmp
 		//更新lru
-		l.lru[l.root.key]= l.root
-		l.lru[l.last.key]= l.last
+		l.lru[l.root.key] = l.root
+		l.lru[l.last.key] = l.last
 
 		//lru
 		return
 	}
 	if l.len > 2 {
-		if  l.lru[key] == l.last {
+		if l.lru[key] == l.last {
 
 			//如果这个元素是最后一个, 更新这个元素
 			//如果这个值是最后一个的话, 还要更新倒数第二个元素
@@ -276,7 +281,6 @@ func (l *List) moveToPrev(key interface{}, value interface{}) {
 	}
 }
 
-
 func (l *List) FirstKey() interface{} {
 	l.lock.Lock()
 	defer l.lock.Unlock()
@@ -295,12 +299,12 @@ func (l *List) Clean(n uint64) {
 	l = nil
 	l.lru = nil
 	l = &List{
-		lru: make(map[interface{}]*element, 0),
-		len: 0,
+		lru:   make(map[interface{}]*element, 0),
+		len:   0,
 		count: n,
-		lock: sync.RWMutex{},
-		root: &element{},
-		last: &element{},
+		lock:  sync.RWMutex{},
+		root:  &element{},
+		last:  &element{},
 	}
 }
 

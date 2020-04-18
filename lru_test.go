@@ -23,7 +23,7 @@ func Test_Add(t *testing.T) {
 func BenchmarkWrite(b *testing.B) {
 	//times :=
 	l := Init(10000000)
-	for i := 0;i<b.N;i++ {
+	for i := 0; i < b.N; i++ {
 		l.Add("apple", i)
 	}
 }
@@ -31,7 +31,7 @@ func BenchmarkWrite(b *testing.B) {
 func BenchmarkRead(b *testing.B) {
 	//times :=
 	l := Init(10000000)
-	for i := 0;i<10000000;i++ {
+	for i := 0; i < 10000000; i++ {
 		l.Add("apple", i)
 	}
 	l.Print()
@@ -65,6 +65,7 @@ func ExampleList_Get() {
 
 func ExampleList_Remove() {
 	l := Init(3)
+	l.Remove("me")
 	l.Add("orange", 313)
 	l.Add("apple", 262)
 	l.Remove("apple")
