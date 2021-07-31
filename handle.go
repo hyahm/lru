@@ -16,7 +16,6 @@ func (l *List) Add(key interface{}, value interface{}) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 	l.add(key, value)
-	log.Println("last: ", l.last.key)
 }
 
 // 获取值
@@ -38,7 +37,7 @@ func (l *List) Keys() []interface{} {
 		return nil
 	}
 	keys := make([]interface{}, 0)
-	for k, _ := range l.lru {
+	for k := range l.lru {
 		keys = append(keys, k)
 	}
 
@@ -79,11 +78,6 @@ func (l *List) Remove(key interface{}) {
 	if l.lru == nil {
 		return
 	}
-	//if Lru.len < LESS {
-	//	e := fmt.Sprintf("cache count less than %d, can't remove" , LESS)
-	//	log.Println(e)
-	//	return
-	//}
 	l.lock.Lock()
 	defer l.lock.Unlock()
 	this := l.lru[key]
