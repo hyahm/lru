@@ -27,65 +27,65 @@ type el struct {
 }
 
 func main() {
-	lru.Init(10)
+	cache = lru.Init(10)
 
-	lru.Add("adsf", "bbbbb")
-	lru.Add("cccc", "111111")
+	cache.Add("adsf", "bbbbb")
+	cache.Add("cccc", "111111")
 	e := &el{
 		Id: 1,
 		Name: "68",
 	}
-	lru.Add("adsf", e)
+	cache.Add("adsf", e)
 	fmt.Println(lru.Len())
-	lru.OrderPrint()
+	cache.OrderPrint()
 }
 ```
 > 万能的add方法, 只要是添加值都可以使用此方法, 存在就会更新, 不存在就会插入, 返回删除的key, 没删除返回nil
 ```
-lru.Add(key, value interface{}) interface{}
+cache.Add(key, value interface{}) interface{}
 ```
 > 顺序打印(有读写锁, 会阻碍读写操作,正式环境建议别使用)
 ```
-lru.OrderPrint()
+cache.OrderPrint()
 ```
 > 无序打印(查看缓存, 推荐使用)
 ```
-lru.Print()
+cache.Print()
 ```
 > 删除key
 ```
-lru.Remove(key interface{})
+cache.Remove(key interface{})
 ```
 > 获取所有的key, 没有就返回空, 返回的key因为执行时间的问题, 可能导致有些key被删除了
 ```
-lru.Keys(key interface{}) []interface{}
+cache.Keys(key interface{}) []interface{}
 ```
 > 获取缓存长度 
 ```
-lru.Len() uint64
+cache.Len() uint64
 ```
 > 根据key获取值
 ```
-lru.Get(key interface{}) interface{}
+cache.Get(key interface{}) interface{}
 ```
 > 根据key获取上一个key
 ```
-lru.Prev(key interface{}) interface{}
+cache.Prev(key interface{}) interface{}
 ```
 > 根据key获取下一个key
 ```
-lru.Next(key interface{}) interface{}
+cache.Next(key interface{}) interface{}
 ```
 > 判断是否存在key
 ```
-lru.Exsit(key interface{}) bool
+cache.Exsit(key interface{}) bool
 ```
 > 重新设置缓存的长度
 ```
-lru.Resize(n uint64)
+cache.Resize(n uint64)
 ```
 > 清空缓存(不推荐使用, 也未测试)
 ```
-lru.Clean(n)
+cache.Clean(n)
 ```
 基本上这些就能满足需求
