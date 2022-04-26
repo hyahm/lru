@@ -122,7 +122,7 @@ func (l *List) OrderPrint() {
 	l.lock.Unlock()
 }
 
-func (l *List) Len() uint64 {
+func (l *List) Len() int {
 	return l.len
 }
 
@@ -135,7 +135,7 @@ func (l *List) Print() {
 	}
 }
 
-func (l *List) Resize(n uint64) {
+func (l *List) Resize(n int) {
 	//如果缩小了缓存, 那么可能需要删除后面多余的索引
 	l.count = n
 	if n < l.count {
@@ -201,12 +201,17 @@ func (l *List) add(key interface{}, value interface{}) interface{} {
 		}
 		l.len++
 		//判断长度是否超过了缓存
-		for uint64(l.len) > l.count {
+		for l.len > l.count {
 			//移除最后一个元素, 移除之前先更新最后一个元素
 			l.removeLast()
 		}
 	}
 	return nil
+}
+
+// 移除最后一个
+func (l *List) RemoveLast() interface{} {
+	return l.removeLast()
 }
 
 func (l *List) removeLast() interface{} {
@@ -287,7 +292,7 @@ func (l *List) LastKey() interface{} {
 	return l.last.key
 }
 
-func (l *List) Clean(n uint64) {
+func (l *List) Clean(n int) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 	l = nil
